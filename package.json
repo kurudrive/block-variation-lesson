@@ -1,0 +1,15 @@
+{
+  "name": "block-variation-lesson",
+  "version": "0.1.0",
+  "description": "",
+  "author": "",
+  "license": "GPL-2.0-or-later",
+  "main": "build/index.js",
+  "scripts": {
+	"start": "wp-scripts start",
+	"build": "wp-scripts build"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^26.18.0"
+  }
+}
