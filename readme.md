@@ -87,7 +87,7 @@ wp.blocks.registerBlockVariation(
 		title: 'Media & Text Custom',
 		attributes: {
 			align: 'wide',
-			backgroundColor: 'tertiary'
+			backgroundColor: 'accent'
 		},
 	}
 );
@@ -145,7 +145,7 @@ wp.blocks.registerBlockVariation(
 		title: 'Media & Text',
 		attributes: {
 			align: 'wide',
-			backgroundColor: 'tertiary'
+			backgroundColor: 'accent'
 		},
 		isDefault: true
 	}
@@ -166,4 +166,214 @@ wp.blocks.registerBlockVariation(
 wp.domReady( () => {
 	wp.blocks.unregisterBlockVariation( 'core/group', 'group-stack' );
 });
+```
+
+# 効かん！
+
+## インナーブロック
+
+インナーブロック を指定する事ができます。
+以下の例ではインナーブロックにデフォルトで見出しブロックと段落ブロックを配置しています。
+
+```
+wp.blocks.registerBlockVariation(
+	'core/media-text',
+	{
+		name: 'media-text-default',
+		title: 'Media & Text',
+		attributes: {
+			align: 'wide',
+			backgroundColor: 'accent'
+		},
+		innerBlocks: [
+			[
+				'core/heading',
+				{
+					level: 3,
+					placeholder: 'Heading'
+				} 
+			],
+			[
+				'core/paragraph',
+				{
+					placeholder: 'Enter content here...'
+				} 
+			],
+		],
+		isDefault: true,
+	}
+);
+```
+
+## isActive property
+
+次に以下の例では、画像が右のブロックがババリエーションとして追加されます。
+名前は 元が「メディアとテキスト」ですが、今回は「Text & Media」としています。
+
+```
+wp.blocks.registerBlockVariation(
+	'core/media-text',
+	{
+		name: 'text-media',
+		title: 'Text & Media',
+		attributes: {
+			align: 'wide',
+			backgroundColor: 'tertiary',
+			mediaPosition: 'right'
+		}
+	}
+);
+```
+
+しかし、この方法はユーザーがコアかバリエーションかを判断できず、混乱を招きやすい。
+数が増えればなおさらである。
+そこで特定のプロパティに isActive を指定すると、その値によってバリエーションブロックを判断し、ブロック名が切り替わります。
+
+以下のようにバリエーションを配置してみてください。
+
+```
+wp.blocks.registerBlockVariation(
+	'core/media-text',
+	{
+		name: 'text-media',
+		title: 'Text & Media',
+		attributes: {
+			align: 'wide',
+			backgroundColor: 'tertiary',
+			mediaPosition: 'right'
+		},
+		isActive: [ 'mediaPosition' ]
+	}
+);
+```
+
+画像が右の時はブロック名が 'Text & Media' になる事が確認できます。
+
+## カスタムアイコンの追加
+
+カスタムバリエーションを追加する場合は、多くの場合独自のアイコンを登録したいと思います。
+24px で svg でなくてはなりません。
+以下のような形式です。
+
+```
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M21 17.5L21 6L13 6L13 17.5L21 17.5ZM10 14.5L3 14.5L3 16L10 16L10 14.5ZM3 11L10 11L10 12.5L3 12.5L3 11ZM10 7.5L3 7.5L3 9L10 9L10 7.5Z"></path>
+</svg>
+```
+
+WordPress のダッシュアイコンは ストーリーブック からブラウザの検証ツールで抽出する事もできます。
+https://wordpress.github.io/gutenberg/?path=/story/icons-icon--library
+これを実際に反映するにはまずは、以下のように登録します。
+
+```
+// Define the icon for the Text & Media block variation.
+const textMediaIcon = wp.element.createElement(
+	wp.primitives.SVG,
+	{ xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+	wp.element.createElement(
+		wp.primitives.Path,
+		{
+			d: "M21 17.5L21 6L13 6L13 17.5L21 17.5ZM10 14.5L3 14.5L3 16L10 16L10 14.5ZM3 11L10 11L10 12.5L3 12.5L3 11ZM10 7.5L3 7.5L3 9L10 9L10 7.5Z",
+		}
+	)
+);
+```
+
+ただし、上記コードでは wp.element と wp.primitives を使っているので、
+php で wp_enqueue_script している部分で依存配列に 'wp-element' と 'wp-primitives' を追加する必要があります。
+
+```
+function example_enqueue_block_variations() {
+	wp_enqueue_script(
+		'example-enqueue-block-variations',
+		plugin_dir_url( __FILE__ ) . '/build/index.js',
+		array( 'wp-blocks', 'wp-dom-ready', 'wp-element', 'wp-primitives' ),
+		__FILE__ . 'build/index.asset.php',
+		false
+	);
+}
+add_action( 'enqueue_block_editor_assets', 'example_enqueue_block_variations' );
+
+```
+
+最後に js ファイルに戻って、registerBlockVariation を書いてある部分に icon を指定します。
+
+```
+wp.blocks.registerBlockVariation(
+	'core/media-text',
+	{
+		name: 'text-media',
+		title: 'Text & Media',
+		icon: textMediaIcon,
+		attributes: {
+			align: 'wide',
+			backgroundColor: 'accent',
+			mediaPosition: 'right'
+		},
+		isActive: [ 'mediaPosition' ]
+	}
+);
+```
+
+これでビルドすると...
+
+こんな感じでアイコンが反映されます。
+ただ、この書き方では実用的ではないので
+
+### WordPress のアイコンをもう少しスマートに使う
+
+WordPress の ダッシュアイコンを使うのであれば
+
+```
+npm install @wordpress/icons --save
+```
+
+した上で以下のように書くと、アイコンを読み込めます。
+
+```
+// Define the icon for the Text & Media block variation.
+import { pullRight } from '@wordpress/icons';
+
+wp.blocks.registerBlockVariation(
+	'core/media-text',
+	{
+		name: 'text-media',
+		title: 'Text & Media',
+		icon: pullRight,
+		attributes: {
+			align: 'wide',
+			backgroundColor: 'accent',
+			mediaPosition: 'right'
+		},
+		isActive: [ 'mediaPosition' ]
+	}
+);
+```
+
+アイコンの種類は前述の通り ストーリーブック から調べられます。
+https://wordpress.github.io/gutenberg/?path=/story/icons-icon--library
+
+### 自作のアイコンを使う
+
+自作した svg を使う場合は、ビルド前の js ファイルを同じディレクトリに icon.svg で保存した場合、
+以下のように最初に ReactComponent で読み込んだ上で使います。
+
+```
+// Define the icon for the Text & Media block variation.
+import { ReactComponent as Icon } from './icon.svg';
+
+wp.blocks.registerBlockVariation(
+	'core/media-text',
+	{
+		name: 'text-media',
+		title: 'Text & Media',
+		icon: <Icon />,
+		attributes: {
+			align: 'wide',
+			backgroundColor: 'accent',
+			mediaPosition: 'right'
+		},
+		isActive: [ 'mediaPosition' ]
+	}
+);
 ```

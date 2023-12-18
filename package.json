@@ -6,10 +6,13 @@
   "license": "GPL-2.0-or-later",
   "main": "build/index.js",
   "scripts": {
-	"start": "wp-scripts start",
-	"build": "wp-scripts build"
+    "start": "wp-scripts start",
+    "build": "wp-scripts build"
   },
   "devDependencies": {
     "@wordpress/scripts": "^26.18.0"
+  },
+  "dependencies": {
+    "@wordpress/icons": "^9.39.0"
   }
 }

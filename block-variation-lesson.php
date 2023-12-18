@@ -16,11 +16,9 @@ function example_enqueue_block_variations() {
 	wp_enqueue_script(
 		'example-enqueue-block-variations',
 		plugin_dir_url( __FILE__ ) . '/build/index.js',
-		array( 'wp-blocks', 'wp-dom-ready' ),
+		array( 'wp-blocks', 'wp-dom-ready', 'wp-element', 'wp-primitives' ),
 		__FILE__ . 'build/index.asset.php',
 		false
 	);
 }
 add_action( 'enqueue_block_editor_assets', 'example_enqueue_block_variations' );
-
-
