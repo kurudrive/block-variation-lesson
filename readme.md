@@ -377,3 +377,5 @@ wp.blocks.registerBlockVariation(
 	}
 );
 ```
+
+ちなみにこの場合は php で wp_enqueue_script の依存配列に追加した 'wp-element' と 'wp-primitives' はなくても大丈夫です。
