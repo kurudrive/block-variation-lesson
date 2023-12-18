@@ -193,8 +193,27 @@ wp.domReady( () => {
 });
 ```
 
-が... このままだと効きません。
+が... このままだと効きません。よくわからなかったのでコアにコントリビュートしまくっている Aki Hamano 氏に泣きついたところ、
+https://github.com/WordPress/gutenberg/issues/27607
+に記載があるようにそのままでは動かないらしく、
 
+```
+window.addEventListener('load', function () {
+	wp.blocks.unregisterBlockVariation( 'core/group', 'group-stack' );
+});
+```
+
+あるいは
+
+```
+window.addEventListener('DOMContentLoaded', function () {
+	wp.blocks.unregisterBlockVariation( 'core/group', 'group-stack' );
+});
+```
+
+だと正常に動作しました。
+
+先述の GitHub にはもう少し別のアプローチも紹介してありますが、とりあえず上記の方法の方が楽なのでそれで良いかなと思います。
 
 
 ## インナーブロック
